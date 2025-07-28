@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Simple To-Do List with Flexbox</title>
+  <style>
+    /* Reset and base styles */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+      padding: 30px 15px;
+      max-width: 420px;
+      margin: 40px auto;
+      color: #333;
+
+      -webkit-user-select: none; /* Safari 3+, iOS Safari 3+ */
+      user-select: none;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #2c3e50;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
+
+    #todo-input {
+      width: 100%;
+      padding: 12px 16px;
+      font-size: 18px;
+      border: none;
+      border-radius: 30px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      outline: none;
+      transition: box-shadow 0.3s ease;
+      margin-bottom: 15px;
+    }
+
+    #todo-input:focus {
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+
+    #add-btn {
+      width: 100%;
+      padding: 12px 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: white;
+      background: #3498db;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      box-shadow: 0 4px 8px rgba(52,152,219,0.4);
+      margin-bottom: 25px;
+    }
+
+    #add-btn:hover {
+      background: #2980b9;
+      box-shadow: 0 6px 12px rgba(41,128,185,0.6);
+    }
+
+    ul {
+      padding-left: 0;
+      list-style: none;
+    }
+
+    /* Flexbox for each list item */
+    li {
+      background: white;
+      padding: 14px 18px;
+      margin-bottom: 12px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: box-shadow 0.3s ease;
+      gap: 10px;
+    }
+
+    li:hover {
+      box-shadow: 0 8px 12px rgba(0,0,0,0.12);
+    }
+
+    li.editing {
+      background: #f0f8ff;
+      box-shadow: 0 6px 14px rgba(41, 128, 185, 0.3);
+    }
+
+    /* Text container: allow text to grow and wrap */
+    li span {
+      flex: 1 1 auto;
+      font-size: 17px;
+      word-break: break-word;
+      color: #2c3e50;
+      min-width: 0; /* fix for flex items with overflow */
+    }
+
+    li.editing input {
+      flex: 1 1 auto;
+      padding: 8px 12px;
+      font-size: 16px;
+      border: 2px solid #3498db;
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.3s ease;
+      min-width: 0;
+    }
+
+    li.editing input:focus {
+      border-color: #2980b9;
+      box-shadow: 0 0 8px #2980b9aa;
+    }
+
+    /* Container for buttons: flex layout with small gap */
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      flex-shrink: 0; /* prevent shrinking */
+    }
+
+    button {
+      background: #ecf0f1;
+      border: none;
+      padding: 7px 14px;
+      border-radius: 24px;
+      cursor: pointer;
+      font-weight: 600;
+      color: #34495e;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+      transition: background 0.25s ease, color 0.25s ease;
+      user-select: none;
+      min-width: 70px;
+      text-align: center;
+    }
+
+    button:hover {
+      background: #3498db;
+      color: white;
+      box-shadow: 0 6px 12px rgba(52, 152, 219, 0.6);
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 20px 10px;
+        max-width: 100%;
+      }
+      #todo-input, #add-btn {
+        font-size: 16px;
+      }
+      li span, li.editing input {
+        font-size: 15px;
+      }
+      button {
+        padding: 6px 12px;
+        font-size: 14px;
+        min-width: 60px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h2>My To-Do List</h2>
+  <input type="text" id="todo-input" placeholder="Enter a task (no numbers allowed)" autocomplete="off" />
+  <button id="add-btn" aria-label="Add task">Add</button>
+
+  <ul id="todo-list" aria-live="polite" aria-relevant="additions"></ul>
+
+  <script>
+    const input = document.getElementById('todo-input');
+    const addBtn = document.getElementById('add-btn');
+    const list = document.getElementById('todo-list');
+
+    // Add new item
+    addBtn.addEventListener('click', () => {
+      try {
+        const text = input.value.trim();
+        if (!text) throw new Error('Task cannot be empty');
+        if (/\d/.test(text)) throw new Error('Task cannot contain numbers');
+
+        addTodoItem(text);
+        input.value = '';
+        input.focus();
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    });
+
+    // Allow pressing Enter to add task
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        addBtn.click();
+      }
+    });
+
+    // Add item function
+    function addTodoItem(text) {
+      const li = document.createElement('li');
+
+      const span = document.createElement('span');
+      span.textContent = text;
+      li.appendChild(span);
+
+      // Buttons container
+      const btnGroup = document.createElement('div');
+      btnGroup.className = 'btn-group';
+
+      // Edit button
+      const editBtn = document.createElement('button');
+      editBtn.textContent = 'Edit';
+      editBtn.setAttribute('aria-label', 'Edit task');
+      btnGroup.appendChild(editBtn);
+
+      // Delete button
+      const delBtn = document.createElement('button');
+      delBtn.textContent = 'Delete';
+      delBtn.setAttribute('aria-label', 'Delete task');
+      btnGroup.appendChild(delBtn);
+
+      li.appendChild(btnGroup);
+
+      // Edit logic
+      editBtn.addEventListener('click', () => {
+        if (li.classList.contains('editing')) {
+          // Save edited text
+          try {
+            const inputEdit = li.querySelector('input');
+            if (!inputEdit) throw new Error('Edit input not found');
+            const newText = inputEdit.value.trim();
+            if (!newText) throw new Error('Task cannot be empty');
+            if (/\d/.test(newText)) throw new Error('Task cannot contain numbers');
+
+            span.textContent = newText;
+            li.classList.remove('editing');
+            editBtn.textContent = 'Edit';
+
+            // Remove input and restore span display
+            li.insertBefore(span, inputEdit);
+            li.removeChild(inputEdit);
+          } catch (err) {
+            alert('Error: ' + err.message);
+          }
+        } else {
+          // Switch to edit mode
+          const inputEdit = document.createElement('input');
+          inputEdit.type = 'text';
+          inputEdit.value = span.textContent || '';
+          li.insertBefore(inputEdit, span);
+          li.removeChild(span);
+
+          li.classList.add('editing');
+          editBtn.textContent = 'Save';
+          inputEdit.focus();
+        }
+      });
+
+      // Delete logic
+      delBtn.addEventListener('click', () => {
+        list.removeChild(li);
+      });
+
+      list.appendChild(li);
+    }
+  </script>
+</body>
+</html>

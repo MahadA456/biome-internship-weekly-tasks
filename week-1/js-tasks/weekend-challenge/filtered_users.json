@@ -1,0 +1,8 @@
+[
+  {
+    "username": "alice",
+    "age": 30,
+    "gender": "female",
+    "email": "alice@example.com"
+  }
+]
