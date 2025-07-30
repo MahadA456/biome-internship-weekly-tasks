@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "target": "ES2015",         // Minimum needed for find/findIndex
+    "lib": ["ES2015", "DOM"],   // Include modern JS and browser support
+    "module": "commonjs",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}

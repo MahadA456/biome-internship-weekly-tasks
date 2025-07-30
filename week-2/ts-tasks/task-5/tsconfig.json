@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "experimentalDecorators": true,
+    "strict": true,
+    "lib": ["ES6", "DOM"],
+    "forceConsistentCasingInFileNames": true
+  }
+}
